@@ -35,6 +35,9 @@ class MockSource(Source):
     def check(self, **kwargs):
         pass
 
+    def message_repository(self):
+        pass
+
 
 def _as_arglist(cmd: str, named_args: Mapping[str, Any]) -> List[str]:
     out = [cmd]
@@ -54,7 +57,8 @@ def spec_mock(mocker):
 
 
 @pytest.fixture
-def entrypoint() -> AirbyteEntrypoint:
+def entrypoint(mocker) -> AirbyteEntrypoint:
+    mocker.patch.object(MockSource, "message_repository", side_effect=[None])
     return AirbyteEntrypoint(MockSource())
 
 

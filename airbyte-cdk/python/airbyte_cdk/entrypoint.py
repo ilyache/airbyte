@@ -115,6 +115,7 @@ class AirbyteEntrypoint(object):
         else:
             self.logger.error("Check failed")
 
+        yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def discover(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
@@ -122,6 +123,8 @@ class AirbyteEntrypoint(object):
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
         catalog = self.source.discover(self.logger, config)
+
+        yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(self, source_spec: ConnectorSpecification, config: TConfig, catalog: TCatalog, state: TState) -> Iterable[AirbyteMessage]:
@@ -148,6 +151,11 @@ class AirbyteEntrypoint(object):
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
         return airbyte_message.json(exclude_unset=True)
+
+    def _emit_queued_messages(self, source) -> Iterable[AirbyteMessage]:
+        if source.message_repository:
+            yield from source.message_repository.consume_queue()
+        return
 
 
 def launch(source: Source, args: List[str]):
