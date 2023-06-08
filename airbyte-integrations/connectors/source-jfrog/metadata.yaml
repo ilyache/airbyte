@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c1f62873-4592-422d-a669-7fa8cfd13119
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-jfrog
+  githubIssueLabel: source-jfrog
+  icon: jfrog.svg
+  license: MIT
+  name: Jfrog
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/jfrog
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

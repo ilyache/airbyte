@@ -1,0 +1,25 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Jfrog Spec
+  type: object
+  required:
+    - jfrogServerUrl
+    - jfrogUsername
+    - jfrogPassword
+  additionalProperties: false
+  properties:
+    jfrogServerUrl:
+      title: JFrog Server URL
+      type: string
+      description: The URL of your organization's JFrog Xray account. Please note that the URL should not include a trailing slash.
+      examples:
+        - https://yourdomain.com
+    jfrogUsername:
+      title: JFrog Username
+      type: string
+      description: Jfrog username
+    jfrogPassword:
+      title: JFrog Password
+      type: string
+      description: Jfrog user password
