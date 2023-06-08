@@ -15,9 +15,13 @@ class JfrogClient:
         self.jfrogPassword = jfrogPassword
         self.logger = logger
 
-    def get_repositories(self):
+    def get_session(self):
         session = requests.Session()
-        session.auth = (self.jfrogUsername,self.jfrogPassword)
+        session.auth = (self.jfrogUsername, self.jfrogPassword)
+        return session
+
+    def get_repositories(self):
+        session = self.get_session()
         try:
             response = session.get(self.jfrogServerUrl + '/artifactory/api/repositories')
             response.raise_for_status()
@@ -29,10 +33,29 @@ class JfrogClient:
             property_list = list(map(lambda item: item['key'], json_data))
             self.logger.info(f'Repositories extracted are: ${property_list}')
 
+            return property_list
         except Exception as e:
             self.logger.error(f'Exception when calling get repositories: {e}')
             raise e
 
+    def create_report(self, repositories):
+        session = self.get_session()
+        try:
+            url = self.jfrogServerUrl + '/xray/api/v1/reports/vulnerabilities'
+            body = {
+                "name": "test",
+                "resources": {
+                    "repositories": [{"name": name} for name in repositories]
+                },
+                "filters": {}
+            }
+            response = session.post(url, json=body)
+            response.raise_for_status()
+            self.logger.info(response.text)
+            return None
+        except Exception as e:
+            self.logger.error(f'Exception when creating the scan report: {e}')
+            raise e
 class JfrogStream(HttpStream, ABC):
     url_base = '' # The URL changes between clients, and therefore is derived from the config rather than being set here
 
@@ -99,7 +122,8 @@ class SourceJfrog(AbstractSource):
         session.auth = (jfrogUsername, jfrogPassword)
         try:
             client = JfrogClient(jfrogServerUrl, jfrogUsername, jfrogPassword, logger)
-            client.get_repositories()
+            repos = client.get_repositories()
+            client.create_report(repos)
             return True, None
         except Exception as e:
             return False, f"Exception during connection validation to JFrog: {e}"
